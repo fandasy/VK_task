@@ -1,0 +1,9 @@
+env: "prod"
+
+grpc:
+  addr: "0.0.0.0"
+  port: 8082
+
+sub_pub:
+  subject_buffer: 32
+  close_timeout: 30s

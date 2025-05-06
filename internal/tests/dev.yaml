@@ -1,0 +1,9 @@
+env: "dev"
+
+grpc:
+  addr: "0.0.0.0"
+  port: 8080
+
+sub_pub:
+  subject_buffer: 16
+  close_timeout: 30s
