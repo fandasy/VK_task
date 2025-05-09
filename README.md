@@ -16,8 +16,6 @@
 - [Паттерны](#использованные-паттерны)
   - [Фасад](#фасад)
 
----
-
 ## Архитектура
 
 ```text
@@ -83,19 +81,19 @@ type SubPub interface {
 }
 ```
 
-##### MessageHandler
+##### **MessageHandler**
 
 **Тип** `func(msg interface{})` - Функция обратного вызова, которая:
 - Вызывается для каждого нового сообщения в подписке
 - Не начнёт обработку следующего сообщения, пока текущее не будет обработано
 
-##### Subscription
+##### **Subscription**
 
 **Метод** `Unsubscribe`, действие:
 - Удаляет подписчика из указанного subject
 - Если subject остаётся без подписчиков - полностью удаляет subject
 
-##### SubPub
+##### **SubPub**
 
 **Метод** `Subscribe`, действие:
 - Создаёт новый subject, если он не существует
@@ -103,14 +101,12 @@ type SubPub interface {
 
 **Ошибки:**
 `ErrInvalidArgument` | `ErrSubPubClosed`
----
 
 **Метод** `Publish`, действие:
 - Отправляет сообщение в очередь subject
 
 **Ошибки:**
 `ErrInvalidArgument` | `ErrNoSuchSubject` | `ErrSubPubClosed`
----
 
 **Метод** `Close`, действие:
 - Прекращает приём новых запросов
@@ -121,7 +117,6 @@ type SubPub interface {
 
 **Ошибки:**
 `ErrSubPubClosed`
----
 
 ### 2. gRPC Server API
 - **Реализация:** [internal/grpc/handler/pubsub](./internal/grpc/handler/pubsub/service.go)
@@ -147,6 +142,7 @@ message Event {
 - `codes.Internal` - failed to subscribe
 - `codes.Unavailable` - failed to send event: `err`
 - `codes.Canceled` - Server stopping
+
 ---
 
 #### Publish (Unary)
@@ -163,7 +159,6 @@ message Event {
 - `codes.InvalidArgument` - data required
 - `codes.InvalidArgument` - no such subject
 - `codes.Internal` - failed to publish
----
 
 ## Запуск
 
@@ -205,6 +200,8 @@ sub_pub:
 - **subscription_buffer** `(int)` - Размер буфера для подписчика
 - **close_timeout** `(duration)` - Макс. время завершения обработчиков
 
+---
+
 ### Ручной запуск
 
 #### Требования
@@ -218,6 +215,8 @@ cd VK_task
 # Запуск сервера с production-конфигом
 go run ./cmd/pubsub-server/main.go --config=./config/prod.yaml
 ```
+
+---
 
 ### Docker-compose
 
