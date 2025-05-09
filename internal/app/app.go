@@ -20,10 +20,12 @@ func New(log *slog.Logger,
 	grpcSrvIP string,
 	grpcSrvPort int,
 	subjectBuffer int,
+	subscriptionBuffer int,
 ) *App {
-	subPub := subpub.NewSubPub(subpub.Config{
-		SubjectPuffer: subjectBuffer,
-	})
+	subPub := subpub.NewSubPub(subpub.NewConfig(
+		subjectBuffer,
+		subscriptionBuffer,
+	), log)
 
 	// Для GracefulStop
 	grpcStopCh := make(chan struct{})

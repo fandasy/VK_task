@@ -10,9 +10,14 @@ import (
 )
 
 type Config struct {
-	Env    string `yaml:"env"`
+	SLOG   SLOG   `yaml:"slog"`
 	GRPC   GRPC   `yaml:"grpc"`
 	SubPub SubPub `yaml:"sub_pub"`
+}
+
+type SLOG struct {
+	Env  string `yaml:"env"`
+	File string `yaml:"file"`
 }
 
 type GRPC struct {
@@ -21,8 +26,9 @@ type GRPC struct {
 }
 
 type SubPub struct {
-	SubjectBuffer int           `yaml:"subject_buffer"`
-	CloseTimeout  time.Duration `yaml:"close_timeout"`
+	SubjectBuffer      int           `yaml:"subject_buffer"`
+	SubscriptionBuffer int           `yaml:"subscription_buffer"`
+	CloseTimeout       time.Duration `yaml:"close_timeout"`
 }
 
 func MustLoad(path string) *Config {

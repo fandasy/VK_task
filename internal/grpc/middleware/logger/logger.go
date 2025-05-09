@@ -1,6 +1,7 @@
 package logger
 
 import (
+	fast_id "VK_task/pkg/fast-id"
 	"context"
 	"github.com/google/uuid"
 	"log/slog"
@@ -25,7 +26,7 @@ func NewUnary(log *slog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		start := time.Now()
 
-		reqID := uuid.New().String()
+		reqID := newID()
 		ctx = context.WithValue(ctx, RequestIDKey, reqID)
 
 		resp, err := handler(ctx, req)
@@ -48,7 +49,7 @@ func NewStream(log *slog.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		start := time.Now()
 
-		reqID := uuid.New().String()
+		reqID := newID()
 		ctx := context.WithValue(ss.Context(), RequestIDKey, reqID)
 
 		wrapStream := &wrapServerStream{
@@ -75,6 +76,17 @@ func NewStream(log *slog.Logger) grpc.StreamServerInterceptor {
 
 		return err
 	}
+}
+
+func newID() string {
+	var id string
+	UUID, err := uuid.NewRandom()
+	if err != nil {
+		id = fast_id.New()
+	} else {
+		id = UUID.String()
+	}
+	return id
 }
 
 type wrapServerStream struct {

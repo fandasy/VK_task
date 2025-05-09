@@ -67,7 +67,7 @@ func (s *Service) Subscribe(req *pb.SubscribeRequest, stream pb.PubSub_Subscribe
 	if err != nil {
 		log.Error("SubPub Subscribe operation failed", sl.Err(err))
 
-		return status.Error(codes.Internal, e.String("failed to subscribe", err))
+		return status.Error(codes.Internal, "failed to subscribe")
 	}
 	defer sub.Unsubscribe()
 
@@ -123,7 +123,7 @@ func (s *Service) Publish(ctx context.Context, req *pb.PublishRequest) (*emptypb
 
 		log.Error("SubPub Publish operation failed", sl.Err(err))
 
-		return nil, status.Error(codes.Internal, e.String("failed to publish", err))
+		return nil, status.Error(codes.Internal, "failed to publish")
 	}
 	return &emptypb.Empty{}, nil
 }

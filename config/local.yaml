@@ -1,9 +1,12 @@
-env: "local"
+slog:
+  env: "local"
+  file: ""
 
 grpc:
   addr: ""
   port: 8082
 
 sub_pub:
-  subject_buffer: 4
+  subject_buffer: 8
+  subscription_buffer: 32
   close_timeout: 1m

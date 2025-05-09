@@ -1,4 +1,6 @@
-env: "dev"
+slog:
+  env: "dev"
+  file: ""
 
 grpc:
   addr: "0.0.0.0"
@@ -6,4 +8,5 @@ grpc:
 
 sub_pub:
   subject_buffer: 16
+  subscription_buffer: 64
   close_timeout: 30s

@@ -10,20 +10,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
-	time.Sleep(1 * time.Minute)
-
 	cfg := config.MustLoad(mustGetConfigPath())
 
-	log := logger.Setup(cfg.Env)
+	log := logger.MustSetup(cfg.SLOG.Env, cfg.SLOG.File)
 
 	log.Debug("Config", slog.Any("data", cfg))
 
 	// App
-	application := app.New(log, cfg.GRPC.Addr, cfg.GRPC.Port, cfg.SubPub.SubjectBuffer)
+	application := app.New(log, cfg.GRPC.Addr, cfg.GRPC.Port, cfg.SubPub.SubjectBuffer, cfg.SubPub.SubscriptionBuffer)
 
 	go application.MustRun()
 

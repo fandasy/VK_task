@@ -2,8 +2,6 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 
-package PubSub;
-
 service PubSub {
   rpc Subscribe(SubscribeRequest) returns (stream Event);
   rpc Publish(PublishRequest) returns (google.protobuf.Empty);

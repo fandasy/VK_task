@@ -1,9 +1,12 @@
-env: "dev"
+slog:
+  env: "dev"
+  file: ""
 
 grpc:
   addr: "0.0.0.0"
-  port: 8080
+  port: 8082
 
 sub_pub:
   subject_buffer: 16
+  subscription_buffer: 64
   close_timeout: 30s

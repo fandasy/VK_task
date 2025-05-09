@@ -25,11 +25,15 @@ const (
 	devConfigPath = "dev.yaml"
 
 	grpcHost = "localhost"
-	grpcPort = 8080
+	grpcPort = 8082
 )
 
 // Для теста нужен запущенный сервер
 func TestPubSubIntegration(t *testing.T) {
+	// Если нужен автоматический старт сервера
+	// _, port, srvStop := startTestApp(devConfigPath)
+	// defer srvStop()
+
 	client, cleanup := newPubSubClient(t, grpcHost, grpcPort)
 	defer cleanup()
 
@@ -112,6 +116,10 @@ func TestPubSubIntegration(t *testing.T) {
 
 // Для теста нужен запущенный сервер
 func TestMultipleSubscribers(t *testing.T) {
+	// Если нужен автоматический старт сервера
+	// _, port, srvStop := startTestApp(devConfigPath)
+	// defer srvStop()
+
 	client, cleanup := newPubSubClient(t, grpcHost, grpcPort)
 	defer cleanup()
 
@@ -151,10 +159,10 @@ func TestMultipleSubscribers(t *testing.T) {
 
 // WARN: Автоматический старт сервера!
 func TestServerStopDuringSubscription(t *testing.T) {
-	cfg, appStop := startTestApp(devConfigPath) // ⚠️
+	_, port, appStop := startTestApp(devConfigPath) // ⚠️
 	defer appStop()
 
-	client, cleanup := newPubSubClient(t, grpcHost, cfg.GRPC.Port)
+	client, cleanup := newPubSubClient(t, grpcHost, port)
 	defer cleanup()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -192,15 +200,15 @@ func newPubSubClient(t *testing.T, host string, port int) (pb.PubSubClient, func
 	}
 }
 
-func startTestApp(path string) (*config.Config, func() error) {
+func startTestApp(path string) (string, int, func() error) {
 	cfg := config.MustLoad(path)
 
-	log := logger.Setup(cfg.Env)
+	log := logger.MustSetup(cfg.SLOG.Env, cfg.SLOG.File)
 
 	log.Debug("Config", slog.Any("data", cfg))
 
 	// App
-	application := app.New(log, cfg.GRPC.Addr, cfg.GRPC.Port, cfg.SubPub.SubjectBuffer)
+	application := app.New(log, cfg.GRPC.Addr, cfg.GRPC.Port, cfg.SubPub.SubjectBuffer, cfg.SubPub.SubscriptionBuffer)
 
 	go application.MustRun()
 
@@ -218,5 +226,5 @@ func startTestApp(path string) (*config.Config, func() error) {
 		return nil
 	}
 
-	return cfg, stop
+	return cfg.GRPC.Addr, cfg.GRPC.Port, stop
 }

@@ -3,6 +3,7 @@ package subpub_test
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"sync"
 	"testing"
 	"time"
@@ -15,7 +16,7 @@ import (
 
 func TestSubPub(t *testing.T) {
 	t.Run("Subscribe/Publish", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 
 		var wg sync.WaitGroup
 		wg.Add(1)
@@ -34,7 +35,7 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Unsubscribe", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 
 		called := false
 		sub, err := sp.Subscribe("test", func(msg interface{}) {
@@ -51,7 +52,7 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Close", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 
 		handlerStarted := make(chan struct{})
 
@@ -80,7 +81,7 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Close with canceled context", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 
 		handlerStarted := make(chan struct{})
 
@@ -106,13 +107,13 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Publish to non-existent subject", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 		err := sp.Publish("nonexistent", "data")
 		assert.Equal(t, subpub.ErrNoSuchSubject, err)
 	})
 
 	t.Run("Concurrent operations", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 100})
+		sp := subpub.NewSubPub(subpub.NewConfig(32, 100), slog.Default())
 		var wg sync.WaitGroup
 
 		// Start 10 subscribers
@@ -120,8 +121,14 @@ func TestSubPub(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				_, err := sp.Subscribe("concurrent", func(msg interface{}) {})
+				_, err := sp.Subscribe("concurrent", func(msg interface{}) {
+					wg.Add(1)
+					//Process
+					time.Sleep(50 * time.Millisecond)
+					wg.Done()
+				})
 				assert.NoError(t, err)
+
 			}()
 		}
 
@@ -140,7 +147,7 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Handler panic recovery", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 
 		_, err := sp.Subscribe("panic", func(msg interface{}) {
 			panic("test panic")
@@ -157,13 +164,13 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Double close", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 		require.NoError(t, sp.Close(context.Background()))
 		assert.Equal(t, subpub.ErrSubPubClosed, sp.Close(context.Background()))
 	})
 
 	t.Run("Subscribe after close", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 		require.NoError(t, sp.Close(context.Background()))
 
 		_, err := sp.Subscribe("test", func(msg interface{}) {})
@@ -171,7 +178,7 @@ func TestSubPub(t *testing.T) {
 	})
 
 	t.Run("Publish after close", func(t *testing.T) {
-		sp := subpub.NewSubPub(subpub.Config{SubjectPuffer: 10})
+		sp := subpub.NewSubPub(subpub.DefaultConfig(), slog.Default())
 		require.NoError(t, sp.Close(context.Background()))
 
 		err := sp.Publish("test", "data")

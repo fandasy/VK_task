@@ -3,20 +3,21 @@ package subpub
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"sync"
-	"sync/atomic"
 )
 
 type subPub struct {
 	subjects map[string]*subject
 	mu       sync.RWMutex
 
-	closed    atomic.Bool // true when subPub is closed
+	closed    bool // true when subPub is closed
 	closeChan chan struct{}
 
 	wg sync.WaitGroup // MessageHandler WaitGroup
 
-	cfg Config
+	log *slog.Logger
+	cfg *Config
 }
 
 var (
@@ -31,26 +32,32 @@ Subscribe
 Если subject не существует, он будет создан.
 */
 func (sp *subPub) Subscribe(subject string, cb MessageHandler) (Subscription, error) {
-	if sp.closed.Load() {
-		return nil, ErrSubPubClosed
-	}
-
 	if subject == "" || cb == nil {
 		return nil, ErrInvalidArgument
 	}
 
-	subj, exists := sp.getSubject(subject)
+	sp.mu.RLock()
+	if sp.closed {
+		sp.mu.RUnlock()
+		return nil, ErrSubPubClosed
+	}
+
+	subj, exists := sp.subjects[subject]
+	sp.mu.RUnlock()
+
 	if !exists {
-		subj = newSubject(sp.cfg.SubjectPuffer, &sp.wg)
+		subj = newSubject(sp.cfg.SubjectBuffer)
 
 		sp.addSubject(subject, subj)
 
-		go subj.dispatchMessage(sp.closeChan)
+		go subj.dispatchMessages(sp.closeChan)
 	}
 
-	sub := newSubscription(subject, sp)
+	sub := newSubscription(subject, cb, sp)
 
-	subj.registerSubscriber(sub, cb)
+	subj.registerSubscriber(sub)
+
+	go sub.dispatchMessages()
 
 	return sub, nil
 }
@@ -61,44 +68,39 @@ Publish
 Если subject не существует, возвращает ошибку ErrNoSuchSubject.
 */
 func (sp *subPub) Publish(subject string, msg interface{}) error {
-	if sp.closed.Load() {
-		return ErrSubPubClosed
-	}
-
 	if subject == "" || msg == nil {
 		return ErrInvalidArgument
 	}
 
-	subj, exists := sp.getSubject(subject)
+	sp.mu.RLock()
+	if sp.closed {
+		sp.mu.RUnlock()
+		return ErrSubPubClosed
+	}
+
+	subj, exists := sp.subjects[subject]
+	sp.mu.RUnlock()
 	if !exists {
 		return ErrNoSuchSubject
 	}
 
-	// Защита от паники при записи в закрытый queue канал
-	subj.mu.RLock()
-	defer subj.mu.RUnlock()
-	if subj.closed {
-		return nil
-	}
-
-	select {
-	case subj.queue <- msg:
-		return nil
-	case <-sp.closeChan:
-		return ErrSubPubClosed
-	}
+	return subj.publish(msg, sp.closeChan)
 }
 
 func (sp *subPub) Close(ctx context.Context) error {
 	sp.mu.Lock()
 
-	if sp.closed.Load() {
+	if sp.closed {
 		sp.mu.Unlock()
 		return ErrSubPubClosed
 	}
 
-	sp.closed.Store(true)
+	sp.closed = true
 	close(sp.closeChan)
+
+	for _, subj := range sp.subjects {
+		subj.close()
+	}
 
 	sp.mu.Unlock()
 
@@ -116,22 +118,14 @@ func (sp *subPub) Close(ctx context.Context) error {
 	}
 }
 
-func (sp *subPub) getSubject(subject string) (*subject, bool) {
-	sp.mu.RLock()
-	subj, exists := sp.subjects[subject]
-	sp.mu.RUnlock()
-
-	return subj, exists
+func (sp *subPub) addSubject(subject string, subj *subject) {
+	sp.mu.Lock()
+	sp.subjects[subject] = subj
+	sp.mu.Unlock()
 }
 
 func (sp *subPub) removeSubject(subject string) {
 	sp.mu.Lock()
 	delete(sp.subjects, subject)
-	sp.mu.Unlock()
-}
-
-func (sp *subPub) addSubject(subject string, subj *subject) {
-	sp.mu.Lock()
-	sp.subjects[subject] = subj
 	sp.mu.Unlock()
 }
