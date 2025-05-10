@@ -33,6 +33,7 @@ func TestPubSubIntegration(t *testing.T) {
 	// Если нужен автоматический старт сервера
 	// _, port, srvStop := startTestApp(devConfigPath)
 	// defer srvStop()
+	// Замените grpcPort на port!
 
 	client, cleanup := newPubSubClient(t, grpcHost, grpcPort)
 	defer cleanup()
@@ -119,6 +120,7 @@ func TestMultipleSubscribers(t *testing.T) {
 	// Если нужен автоматический старт сервера
 	// _, port, srvStop := startTestApp(devConfigPath)
 	// defer srvStop()
+	// Замените grpcPort на port!
 
 	client, cleanup := newPubSubClient(t, grpcHost, grpcPort)
 	defer cleanup()
