@@ -1,12 +1,12 @@
 slog:
-  env: "dev"
-  file: ""
+  env: "dev"   # Режим логирования (local, dev, prod)
+  file: ""     # Файл для логов (пусто = stdout)
 
 grpc:
-  addr: "0.0.0.0"
-  port: 8082
+  addr: "0.0.0.0"  # Интерфейс прослушивания
+  port: 8082       # Порт сервера
 
 sub_pub:
-  subject_buffer: 16
-  subscription_buffer: 64
-  close_timeout: 30s
+  subject_buffer: 16       # Буфер сообщений темы
+  subscription_buffer: 64  # Буфер подписки
+  close_timeout: 30s       # Таймаут завершения

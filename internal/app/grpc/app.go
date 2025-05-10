@@ -1,7 +1,6 @@
 package grpcapp
 
 import (
-	"VK_task/internal/grpc/handler/pubsub"
 	"VK_task/internal/grpc/middleware/logger"
 	pb "VK_task/pkg/api/pubsub"
 	"VK_task/pkg/e"
@@ -20,7 +19,7 @@ type App struct {
 	stop chan struct{}
 }
 
-func New(ip string, port int, log *slog.Logger, service *pubsub.Service, stop chan struct{}) *App {
+func New(ip string, port int, log *slog.Logger, service pb.PubSubServer, stop chan struct{}) *App {
 	gRPCServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(logger.NewUnary(log)),
 		grpc.ChainStreamInterceptor(logger.NewStream(log)),
