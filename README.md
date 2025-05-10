@@ -210,6 +210,8 @@ sub_pub:
 git clone https://github.com/fandasy/VK_task.git
 cd VK_task
 
+go mod tidy
+
 # Запуск сервера с production-конфигом
 go run ./cmd/pubsub-server/main.go --config=./config/prod.yaml
 ```
@@ -226,13 +228,12 @@ go run ./cmd/pubsub-server/main.go --config=./config/prod.yaml
 - [docker-compose.yaml](./docker-compose.yaml)
 
 ```bash
+# С начало скачайте репозиторий
+git clone https://github.com/fandasy/VK_task.git
+cd VK_task
+
 # Сборка и запуск контейнеров
 docker-compose up --build
-```
-
-```bash
-# Только запуск (без пересборки)
-docker-compose up
 ```
 
 ## Проверка
