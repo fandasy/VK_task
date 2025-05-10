@@ -99,27 +99,27 @@ type SubPub interface {
 
 ### SubPub
 
-***- Метод*** `Subscribe`, действие:
+***Метод*** `Subscribe`, действие:
 - Создаёт новый subject, если он не существует
 - Регистрирует подписчика с callback-функцией
 
-Ошибки:
+>Ошибки:
 `ErrInvalidArgument` | `ErrSubPubClosed`
 
-***- Метод*** `Publish`, действие:
+***Метод*** `Publish`, действие:
 - Отправляет сообщение в очередь subject
 
-Ошибки:
+>Ошибки:
 `ErrInvalidArgument` | `ErrNoSuchSubject` | `ErrSubPubClosed`
 
-***- Метод*** `Close`, действие:
+***Метод*** `Close`, действие:
 - Прекращает приём новых запросов
 - Закрывает все subject и subscription
 - Ожидает завершения:
   - Всех обработчиков MessageHandler
   - Либо истечения context
 
-Ошибки:
+>Ошибки:
 `ErrSubPubClosed`
 
 ## 2. gRPC Server API
