@@ -1,7 +1,7 @@
 # PubSub Service
 
 # Описание
-Профильное задание: Сервис подписок работающего по gRPC, использующий принцип Publisher-Subscriber.
+Сервис подписок работающего по gRPC, использующий принцип Publisher-Subscriber.
 
 # Содержание
 
@@ -23,44 +23,44 @@
 # Архитектура
 
 ```text
-📦 pubsub-app
-├───🚀 cmd
+pubsub-app
+├─── cmd
 │   └───pubsub-server/main.go                   
 │
-├───⚙️ configs               # Конфигурация окружений
+├─── configs               # Конфигурация окружений
 │       dev.yaml             # - разработка
 │       local.yaml           # - локальная
 │       prod.yaml            # - продакшен
 │
-├───🔒 internal
-│   ├───🏗️ app               # Инициализация приложения
+├─── internal
+│   ├─── app               # Инициализация приложения
 │   │   └───grpc             # инициализация gRPC-Server
 │   │
-│   ├───📝 config
+│   ├─── config
 │   │
-│   ├───🌐 grpc              # gRPC транспорт
-│   │   ├───🛠️ handler
-│   │   └───🔌 middleware
+│   ├─── grpc              # gRPC транспорт
+│   │   ├─── handler
+│   │   └─── middleware
 │   │
-│   ├───📦 pkg
-│   │   └───📋 logger
+│   ├─── pkg
+│   │   └─── logger
 │   │       └───sl           # Вспомогательные методы для slog
 │   │
-│   └───🧪 tests             # Тесты приложения
+│   └─── tests             # Тесты приложения
 │
-├───📚 pkg
-│   ├───📡 api
+├─── pkg
+│   ├─── api
 │   │   └───pubsub           # Сгенерированные protobuf файлы
 │   │
-│   ├───❗ e                  # Вспомогательные методы для error
+│   ├─── e                  # Вспомогательные методы для error
 │   │
-│   └───🔄 subpub            # Пакет SubPub
-│       └──🧪 subpub_test    # Тесты пакета
+│   └─── subpub            # Пакет SubPub
+│       └── subpub_test    # Тесты пакета
 │
-└───📜 protoс                # Прото-контракты
+└─── protoс                # Прото-контракты
     │   Makefile             # Скрипты генерации
-    ├──⚡ gen                # Сгенерированные protobuf файлы
-    └──📄 proto              # Исходные .proto файлы
+    ├── gen                # Сгенерированные protobuf файлы
+    └── proto              # Исходные .proto файлы
 ```
 
 # Компоненты
